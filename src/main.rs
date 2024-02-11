@@ -1,5 +1,10 @@
+use clap::Parser;
+
+mod app;
+mod filesys;
 mod hash;
+mod repo;
 
 fn main() {
-    println!("Hello, world!");
+    let cli = app::Cli::parse();
 }
