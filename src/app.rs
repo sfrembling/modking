@@ -33,3 +33,28 @@ enum Command {
         vanilla: bool,
     },
 }
+
+impl Cli {
+    pub fn run(self) -> anyhow::Result<()> {
+        match self.cmd {
+            Command::Init { full } => {
+                super::filesys::init()?;
+                if full {
+                    let mut repo = super::filesys::get_repo()?;
+                    repo.get_current_branch_mut().update()?;
+                    repo.get_current_branch_mut().lock();
+                    std::fs::write(
+                        super::filesys::MKFiles::RepoData.get_path(),
+                        repo.to_json()?,
+                    )?;
+                }
+            }
+            Command::Lock => todo!(),
+            Command::Unlock => todo!(),
+            Command::Update => todo!(),
+            Command::Branch { list, new, vanilla } => todo!(),
+        }
+
+        Ok(())
+    }
+}

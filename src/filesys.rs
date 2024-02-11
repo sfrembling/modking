@@ -35,3 +35,27 @@ pub fn init() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+pub fn get_repo() -> anyhow::Result<super::repo::Repo> {
+    let repo_path = MKFiles::RepoData.get_path();
+    let repo = std::fs::read_to_string(repo_path)?;
+    let repo = super::repo::Repo::from_json(&repo)?;
+
+    Ok(repo)
+}
+
+pub fn read_directory() -> Vec<PathBuf> {
+    let root = MKFiles::MainPath.get_path();
+    walkdir::WalkDir::new(".")
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .map(|e| e.path().to_path_buf())
+        .filter_map(|p| {
+            let p = p.strip_prefix(".\\").ok();
+            p.map(|p| p.to_path_buf())
+        })
+        .filter(|p| !p.starts_with(&root))
+        .filter(|p| p.is_file())
+        .filter(|p| !p.display().to_string().is_empty())
+        .collect()
+}
