@@ -32,15 +32,16 @@ enum Command {
         #[arg(short, long)]
         vanilla: bool,
     },
+    Info,
 }
 
 impl Cli {
     pub fn run(self) -> anyhow::Result<()> {
+        let mut repo = super::filesys::get_repo()?;
         match self.cmd {
             Command::Init { full } => {
                 super::filesys::init()?;
                 if full {
-                    let mut repo = super::filesys::get_repo()?;
                     repo.get_current_branch_mut().update()?;
                     repo.get_current_branch_mut().lock();
                     std::fs::write(
@@ -49,10 +50,25 @@ impl Cli {
                     )?;
                 }
             }
-            Command::Lock => todo!(),
-            Command::Unlock => todo!(),
+            Command::Lock => {
+                repo.get_current_branch_mut().lock();
+                std::fs::write(
+                    super::filesys::MKFiles::RepoData.get_path(),
+                    repo.to_json()?,
+                )?;
+            }
+            Command::Unlock => {
+                repo.get_current_branch_mut().unlock();
+                std::fs::write(
+                    super::filesys::MKFiles::RepoData.get_path(),
+                    repo.to_json()?,
+                )?;
+            }
             Command::Update => todo!(),
             Command::Branch { list, new, vanilla } => todo!(),
+            Command::Info => {
+                println!("{}", repo.get_current_branch());
+            }
         }
 
         Ok(())

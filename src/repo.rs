@@ -1,4 +1,4 @@
-use std::{path::PathBuf, sync::Mutex};
+use std::{fmt::Display, path::PathBuf, sync::Mutex};
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
@@ -42,6 +42,13 @@ pub struct Branch {
     name: String,
     refs: Vec<Ref>,
     locked: bool,
+}
+
+impl Display for Branch {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let status = if self.locked { "🔒" } else { "🔓" };
+        write!(f, "{} - {}", self.name, status)
+    }
 }
 
 impl Branch {
