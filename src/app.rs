@@ -64,11 +64,41 @@ impl Cli {
                     repo.to_json()?,
                 )?;
             }
-            Command::Update => todo!(),
-            Command::Branch { list, new, vanilla } => todo!(),
-            Command::Info => {
-                println!("{}", repo.get_current_branch());
+            Command::Update => {
+                repo.get_current_branch_mut().update()?;
+                std::fs::write(
+                    super::filesys::MKFiles::RepoData.get_path(),
+                    repo.to_json()?,
+                )?;
             }
+            Command::Branch { list, new, vanilla } => {
+                if list {
+                    let branches = repo.get_all_branches();
+                    let choice = dialoguer::Select::new()
+                        .items(&branches)
+                        .default(repo.current_branch)
+                        .interact()?;
+
+                    repo.swap_current(choice);
+                    std::fs::write(
+                        super::filesys::MKFiles::RepoData.get_path(),
+                        repo.to_json()?,
+                    )?;
+                } else if vanilla {
+                    repo.swap_current(0);
+                    std::fs::write(
+                        super::filesys::MKFiles::RepoData.get_path(),
+                        repo.to_json()?,
+                    )?;
+                } else if let Some(name) = new {
+                    repo.duplicate(&name)?;
+                    std::fs::write(
+                        super::filesys::MKFiles::RepoData.get_path(),
+                        repo.to_json()?,
+                    )?;
+                }
+            }
+            Command::Info => println!("{}", repo.get_current_branch()),
         }
 
         Ok(())
